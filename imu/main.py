@@ -1,5 +1,6 @@
 import csv
 import socket
+import time
 
 # Path to the CSV file
 csv_file_path = 'E:/Programs/C/Projects/Embevity/imu/mydata.csv'
@@ -23,9 +24,10 @@ except FileNotFoundError:
 except Exception as e:
     print(f"An error occurred while reading the file: {e}")
 
-# Displaying the data
-for index, row in enumerate(file_data):
-    print(f"Row {index + 1}: {row}")
+# Frequency and delay
+FREQUENCY_HZ = 50
+DELAY_S = 1.0 / FREQUENCY_HZ
+
 
 # Function to start the TCP/IP server
 def start_server(host='127.0.0.1', port=65432):
@@ -36,20 +38,47 @@ def start_server(host='127.0.0.1', port=65432):
 
         print(f"Server listening on {host}:{port}")
 
-        # Wait for a connection
-        conn, addr = server_socket.accept()
-        with conn:
-            print(f"Connected by {addr}")
+        while True:
+            # Wait for a connection
+            conn, addr = server_socket.accept()
+            with conn:
+                print(f"Connected by {addr}")
+                # Start from 1 row, as 1st include columns names ax, ay az ..
+                current_index = 1
+                conn.settimeout(60)  # Set timeout to 60 seconds
 
-            try:
-                # Send data to the client
-                for row in file_data:
-                    # Convert row to a string and encode to bytes
-                    message = ','.join(row) + '\n'
-                    conn.sendall(message.encode('utf-8'))
-                print("Data sent successfully.")
-            except Exception as e:
-                print(f"An error occurred while sending data: {e}")
+                while current_index < len(file_data):
+                    try:
+                        # Wait for a request from the client
+                        request = conn.recv(1024).decode('utf-8')
+
+                        if request.strip().lower() == 'send':
+                            # Get the current row
+                            row = file_data[current_index]
+                            # Increment the index for the next row
+                            current_index += 1
+
+                            # Convert row to a string without commas and encode to bytes
+                            message = ' '.join(row) + '\n'
+                            conn.sendall(message.encode('utf-8'))
+                            print(f"Data sent: {message.strip()}")
+
+                            # Wait for the next interval
+                            time.sleep(DELAY_S)
+                        else:
+                            print(f"Unexpected request: {request}")
+
+                    except socket.timeout:
+                        print("Timeout: No request from client within 60 seconds.")
+                        break
+                    except Exception as e:
+                        print(f"An error occurred: {e}")
+                        break
+
+                # Close the connection after the last row is sent or timeout occurs
+                print("Closing connection.")
+                conn.close()
+
 
 # Start the server
 if __name__ == "__main__":
