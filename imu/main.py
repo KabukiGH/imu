@@ -3,7 +3,7 @@ import socket
 import time
 
 # Path to the CSV file
-csv_file_path = 'E:/Programs/C/Projects/Embevity/imu/mydata.csv'
+csv_file_path = 'E:/Programs/C/Projects/Embevity/imu/imu.csv'
 
 # List to store data
 file_data = []
@@ -15,7 +15,7 @@ try:
 
         # Iterate through the first six rows
         for i, row in enumerate(csv_reader):
-            if i < 6:
+            if i < 3500: #Target file max row number
                 file_data.append(row)
             else:
                 break  # Stop after reading six rows
@@ -43,7 +43,7 @@ def start_server(host='127.0.0.1', port=65432):
             conn, addr = server_socket.accept()
             with conn:
                 print(f"Connected by {addr}")
-                # Start from 1 row, as 1st include columns names ax, ay az ..
+                # Start from 1 row, as 0 include columns names ax, ay az ..
                 current_index = 1
                 conn.settimeout(60)  # Set timeout to 60 seconds
 
@@ -63,8 +63,6 @@ def start_server(host='127.0.0.1', port=65432):
                             conn.sendall(message.encode('utf-8'))
                             print(f"Data sent: {message.strip()}")
 
-                            # Wait for the next interval
-                            time.sleep(DELAY_S)
                         else:
                             print(f"Unexpected request: {request}")
 
@@ -75,9 +73,16 @@ def start_server(host='127.0.0.1', port=65432):
                         print(f"An error occurred: {e}")
                         break
 
-                # Close the connection after the last row is sent or timeout occurs
-                print("Closing connection.")
-                conn.close()
+                request = conn.recv(1024).decode('utf-8')
+
+                if request.strip().lower() == 'send':
+                    # Send Last Packet to indicate client close socket
+                    print("No more data to send.")
+                    conn.sendall(b'')
+
+                    # Close the connection after the last row is sent or timeout occurs
+                    print("Closing connection.")
+                    conn.close()
 
 
 # Start the server

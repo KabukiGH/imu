@@ -15,7 +15,7 @@
 #define FF_THRESHOLD_G 0.1 // Default value 0.1g for ax, ay, az
 #define FF_IS_ACTIVE 1
 #define FF_IS_NOT_ACTIVE 0
-#define INTERRUPT_MASK 1 
+#define INTERRUPT_MASK 1U 
 
 /*Typedefs*/
 typedef struct
