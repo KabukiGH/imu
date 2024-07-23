@@ -1,9 +1,12 @@
 import csv
 import socket
-import time
+import os
 
-# Path to the CSV file
-csv_file_path = 'E:/Programs/C/Projects/Embevity/imu/imu.csv'
+# Get the directory of the current script
+script_dir = os.path.dirname(__file__)
+
+# Path to the CSV file in the same directory as the script
+csv_file_path = os.path.join(script_dir, 'imu.csv')
 
 # List to store data
 file_data = []
