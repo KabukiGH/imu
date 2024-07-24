@@ -15,20 +15,28 @@ imu/
 
 Steps for Building and Launching
 1. Clone repository
+```
 git clone https://github.com/KabukiGH/imu.git
+```
 
 2. Ensure you have a imu.csv in the same directory as main.py
    
-4. Run the Python Server:
+3. Run the Python Server:
+```
 python3 main.py
+```
 This will start the server, which will listen for incoming connections.
 
-5.Compile the Client Code:
+4. Compile the Client Code:
 Use your C compiler to compile client.c. For example, using GCC:
+```
 gcc -o client main.c
+```
 
-6. Run the Client:
+5. Run the Client:
+```
 ./client.exe
+```
 This will start the client, which will connect to the server and begin receiving data at the specified frequency (50 Hz).
 
 Detailed Explanation of the Process
